@@ -38,7 +38,13 @@ export const registerUser = async (
     if (existing) {
       return reply.status(400).send({ message: 'Email already exists' });
     }
-    const user = await userService.createUser({ name, email, password });
+
+    // ✅ Capture uploaded image (if present)
+    const profilePic = (req as any).file
+      ? `/uploads/${(req as any).file.filename}`
+      : '';
+
+    const user = await userService.createUser({ name, email, password, profilePic });
     reply.send({ user });
   } catch (err: any) {
     reply.status(500).send({ message: err.message });
@@ -84,7 +90,13 @@ export const updateUserById = async (
   reply: FastifyReply
 ) => {
   try {
-    const updateData = req.body; // TypeScript now knows the shape
+    const updateData = req.body;
+
+    // ✅ Check if a new profile picture was uploaded
+    if ((req as any).file) {
+      updateData.profilePic = `/uploads/${(req as any).file.filename}`;
+    }
+
     const user = await userService.updateUser(req.params.id, updateData);
     reply.send(user);
   } catch (err: any) {
