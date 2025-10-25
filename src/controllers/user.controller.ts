@@ -39,9 +39,9 @@ export const registerUser = async (
       return reply.status(400).send({ message: 'Email already exists' });
     }
     const user = await userService.createUser({ name, email, password });
-    reply.send({ user });
+    reply.send({ status: 'success', user });
   } catch (err: any) {
-    reply.status(500).send({ message: err.message });
+    reply.status(500).send({ status: 'error', message: err.message });
   }
 };
 
