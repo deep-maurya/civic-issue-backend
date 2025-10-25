@@ -115,3 +115,7 @@ export const deleteUserById = async (
     reply.status(500).send({ message: err.message });
   }
 };
+
+export const logoutUser = async (req: FastifyRequest, reply: FastifyReply) => {
+  reply.send({ status: 'success', message: 'User logged out' });
+};
