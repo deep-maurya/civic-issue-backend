@@ -9,7 +9,7 @@ export interface IUser extends Document {
   role: UserRole;
   createdBy?: mongoose.Types.ObjectId;
   isActive: boolean;
-  profilePic?: string;
+  profilePic?: string; // ✅ match the controller field name
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,7 +22,7 @@ const userSchema: Schema<IUser> = new Schema(
     role: { type: String, enum: ['user', 'admin', 'worker'], default: 'user' },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     isActive: { type: Boolean, default: true },
-    profilePicture: { type: String, default: "" },,
+    profilePic: { type: String, default: '' }, // ✅ consistent name
   },
   { timestamps: true }
 );
