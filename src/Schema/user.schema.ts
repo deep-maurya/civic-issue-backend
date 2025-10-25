@@ -22,7 +22,7 @@ const userSchema: Schema<IUser> = new Schema(
     role: { type: String, enum: ['user', 'admin', 'worker'], default: 'user' },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
     isActive: { type: Boolean, default: true },
-    profilePic: { type: String },
+    profilePicture: { type: String, default: "" },,
   },
   { timestamps: true }
 );
