@@ -53,11 +53,15 @@ export const loginUser = async (
     const { email, password } = req.body;
     const user = await userService.getUserByEmail(email);
     if (!user)
-      return reply.status(400).send({ message: 'Invalid credentials' });
+      return reply
+        .status(400)
+        .send({ status: 'error', message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return reply.status(400).send({ message: 'Invalid credentials' });
+      return reply
+        .status(400)
+        .send({ status: 'error', message: 'Invalid credentials' });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -72,9 +76,9 @@ export const loginUser = async (
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
       })
-      .send({ user });
+      .send({ status: 'success', user });
   } catch (err: any) {
-    reply.status(500).send({ message: err.message });
+    reply.status(500).send({ status: 'error', message: err.message });
   }
 };
 
