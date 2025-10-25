@@ -14,29 +14,33 @@ export const createIssue = async (data: {
   images?: string[];
   reportedBy: string;
 }) => {
-  const issue = await Issue.create({
-    ...data,
-    timeline: [
-      {
-        status: 'pending',
-        by: new Types.ObjectId(data.reportedBy),
-        date: new Date(),
-      },
-    ],
-  });
+  try {
+    const issue = await Issue.create({
+      ...data,
+      timeline: [
+        {
+          status: 'reported',
+          by: new Types.ObjectId(data.reportedBy),
+          date: new Date(),
+        },
+      ],
+    });
 
-  const populatedIssue = await Issue.findById(issue._id)
-    .populate('reportedBy', 'name email')
-    .populate('assignedTo', 'name email')
-    .populate('opinions.user', 'name email')
-    .populate('upvotes', 'name email')
-    .populate('timeline.by', 'name email');
+    const populatedIssue = await Issue.findById(issue._id)
+      .populate('reportedBy', 'name email')
+      .populate('assignedTo', 'name email')
+      .populate('opinions.user', 'name email')
+      .populate('upvotes', 'name email')
+      .populate('timeline.by', 'name email');
 
-  return {
-    status: 'success',
-    message: 'Issue created successfully',
-    data: populatedIssue,
-  };
+    return {
+      status: 'success',
+      message: 'Issue created successfully',
+      data: populatedIssue,
+    };
+  } catch (error: any) {
+    throw new Error(`Failed to create issue: ${error.message}`);
+  }
 };
 
 export const getAllIssues = async () => {

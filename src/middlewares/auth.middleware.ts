@@ -1,10 +1,18 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import jwt from 'jsonwebtoken';
+import publicRoutes from '../constants/publicRoutes';
 
 export const authMiddleware = async (
   req: FastifyRequest,
   reply: FastifyReply
 ) => {
+  const path = req.url.split('?')[0];
+  const method = req.method;
+  const isPublic = publicRoutes.some(
+    (r) => r.path === path && (r.method === 'ALL' || r.method === method)
+  );
+  if (isPublic) return;
+
   try {
     const authHeader = req.headers.authorization;
     const token = req.cookies.token || (authHeader && authHeader.split(' ')[1]);
@@ -15,11 +23,11 @@ export const authMiddleware = async (
         message: 'Authentication failed',
       });
     }
+
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET as string
     ) as jwt.JwtPayload;
-
     (req as any).user = decoded;
   } catch (err: any) {
     if (err.name === 'TokenExpiredError') {

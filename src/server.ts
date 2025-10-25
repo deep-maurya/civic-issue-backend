@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import routes from './routes';
 import allowedOrigins from './constants/allowedOrigins';
+import multipart from '@fastify/multipart';
 
 dotenv.config();
 
@@ -26,6 +27,12 @@ const startServer = async () => {
   });
 
   await app.register(cookie);
+  await app.register(multipart, {
+    attachFieldsToBody: false,
+    limits: {
+      fileSize: 10 * 1024 * 1024,
+    },
+  });
 
   // Connect to MongoDB
   await connectDB();

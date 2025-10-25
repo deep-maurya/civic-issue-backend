@@ -6,10 +6,12 @@ import publicRoutes from '../constants/publicRoutes';
 
 const routes: FastifyPluginAsync = async (app: FastifyInstance) => {
   app.addHook('preHandler', async (req, reply) => {
-    const url = req.routeOptions?.url;
-    if (!url || publicRoutes.includes(url)) {
-      return;
-    }
+    const path = req.url.split('?')[0];
+    const method = req.method;
+    const isPublic = publicRoutes.some(
+      (r) => r.path === path && (r.method === 'ALL' || r.method === method)
+    );
+    if (isPublic) return;
     await authMiddleware(req, reply);
   });
 
