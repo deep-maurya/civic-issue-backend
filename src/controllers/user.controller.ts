@@ -64,7 +64,15 @@ export const loginUser = async (
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
-    reply.send({ user, token });
+    reply
+      .setCookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60,
+      })
+      .send({ user });
   } catch (err: any) {
     reply.status(500).send({ message: err.message });
   }
