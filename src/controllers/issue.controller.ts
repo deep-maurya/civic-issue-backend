@@ -152,15 +152,16 @@ export const toggleUpvoteController = async (
 export const assignWorkerController = async (
   req: FastifyRequest<{
     Params: { id: string };
-    Body: { workerId: string; adminId: string };
+    Body: { workerId: string };
   }>,
   reply: FastifyReply
 ) => {
   try {
+    const user = (req as any).user;
     const result = await assignWorker({
       issueId: req.params.id,
       workerId: req.body.workerId,
-      adminId: req.body.adminId,
+      adminId: user.id,
     });
     reply.send(result);
   } catch (err: any) {
@@ -171,16 +172,13 @@ export const assignWorkerController = async (
 export const updateStatusController = async (
   req: FastifyRequest<{
     Params: { id: string };
-    Body: { status: 'pending' | 'in-progress' | 'resolved'; userId: string };
+    Body: { status: 'pending' | 'in-progress' | 'resolved' };
   }>,
   reply: FastifyReply
 ) => {
   try {
-    const result = await updateStatus(
-      req.params.id,
-      req.body.status,
-      req.body.userId
-    );
+    const user = (req as any).user;
+    const result = await updateStatus(req.params.id, req.body.status, user.id);
     reply.send(result);
   } catch (err: any) {
     reply.code(400).send({ status: 'error', message: err.message });
