@@ -21,6 +21,8 @@ export interface IIssue extends Document {
   status: 'pending' | 'in-progress' | 'resolved';
   createdAt: Date;
   updatedAt: Date;
+  lat?: Number;
+  lng?: Number;
 }
 
 const issueSchema = new Schema<IIssue>(
@@ -50,6 +52,12 @@ const issueSchema = new Schema<IIssue>(
       type: String,
       enum: ['pending', 'in-progress', 'resolved'],
       default: 'pending',
+    },
+    lat: {
+      type: Number,
+    },
+    lng: {
+      type: Number,
     },
   },
   { timestamps: true }
