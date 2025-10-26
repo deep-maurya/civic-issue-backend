@@ -1,5 +1,8 @@
 import Issue, { IIssue } from '../Schema/issue.schema';
 import { Types } from 'mongoose';
+import { getUserById } from './user.service';
+import { Mail_Sender } from '../utis/emailSender';
+import { issueUpvoted } from '../utis/emailTemplates';
 
 interface AssignWorkerData {
   issueId: string;
@@ -104,17 +107,36 @@ export const toggleUpvote = async (issueId: string, userId: string) => {
   const userObjId = new Types.ObjectId(userId);
   let action = 'upvoted';
 
+  let count = 0;
   if (issue.upvotes.some((id) => id.equals(userObjId))) {
     await Issue.findByIdAndUpdate(issueId, { $pull: { upvotes: userObjId } });
     action = 'removed upvote';
+    const updatedIssue = await Issue.findById(issueId);
+    count = updatedIssue?.upvotes.length || 0;
   } else {
-    await Issue.findByIdAndUpdate(issueId, {
+    const result = await Issue.findByIdAndUpdate(issueId, {
       $addToSet: { upvotes: userObjId },
     });
-  }
+    const updatedIssue = await Issue.findById(issueId);
+    count = updatedIssue?.upvotes.length || 0;
+    if (result) {
+      const userdata = await getUserById(result?.reportedBy.toString());
 
-  const updatedIssue = await Issue.findById(issueId);
-  const count = updatedIssue?.upvotes.length || 0;
+      if (userdata?.email) {
+        const { html, without_html } = issueUpvoted(
+          userdata?.name || 'User',
+          result?.title || 'the issue',
+          count
+        );
+        const send_email = await Mail_Sender(
+          userdata.email,
+          'Issue Upvoted Successfully',
+          without_html,
+          html
+        );
+      }
+    }
+  }
 
   return {
     status: 'success',

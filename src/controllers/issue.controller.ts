@@ -9,6 +9,9 @@ import {
   updateStatus,
 } from '../services/issue.service';
 import { uploadImage } from '../utis/uploadImage';
+import { Mail_Sender } from '../utis/emailSender';
+import { issueUpdated } from '../utis/emailTemplates';
+import { getUserById } from '../services/user.service';
 
 export const createIssueController = async (
   req: FastifyRequest,
@@ -56,6 +59,7 @@ export const createIssueController = async (
         message: 'Unauthorized: User info not found in token',
       });
     }
+
     const issueData = {
       title: title.trim(),
       description: description.trim(),
@@ -67,6 +71,23 @@ export const createIssueController = async (
     };
 
     const result = await createIssue(issueData);
+    if (result) {
+      const userdata = await getUserById(user.id);
+
+      if (userdata?.email) {
+        const { html, without_html } = issueUpdated(
+          userdata?.name || 'User',
+          issueData?.title,
+          'Reported'
+        );
+        const send_email = await Mail_Sender(
+          userdata.email,
+          'Issue Reported Successfully',
+          without_html,
+          html
+        );
+      }
+    }
     reply.code(201).send(result);
   } catch (err: any) {
     reply.code(400).send({ status: 'error', message: err.message });

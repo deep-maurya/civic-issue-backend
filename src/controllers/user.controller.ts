@@ -3,6 +3,8 @@ import * as userService from '../services/user.service';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { UserRole } from '../Schema/user.schema';
+import { userRegistration } from '../utis/emailTemplates';
+import { Mail_Sender } from '../utis/emailSender';
 
 interface RegisterBody {
   name: string;
@@ -39,6 +41,15 @@ export const registerUser = async (
       return reply.status(400).send({ message: 'Email already exists' });
     }
     const user = await userService.createUser({ name, email, password });
+    if (user) {
+      const { html, without_html } = userRegistration(name, email, password);
+      const send_email = await Mail_Sender(
+        email,
+        'Registration Successful on Public Pulse',
+        without_html,
+        html
+      );
+    }
     reply.send({ status: 'success', user });
   } catch (err: any) {
     reply.status(500).send({ status: 'error', message: err.message });
