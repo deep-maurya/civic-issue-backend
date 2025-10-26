@@ -1,8 +1,11 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import cookie from 'fastify-cookie';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db';
 import routes from './routes';
+import allowedOrigins from './constants/allowedOrigins';
+import multipart from '@fastify/multipart';
 
 dotenv.config();
 
@@ -12,7 +15,23 @@ const startServer = async () => {
 
   // Register CORS
   await app.register(cors, {
-    origin: '*',
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) {
+        cb(null, true);
+      } else {
+        return cb(new Error('Not allowed by CORS'), false);
+      }
+    },
+    credentials: true,
+  });
+
+  await app.register(cookie);
+  await app.register(multipart, {
+    attachFieldsToBody: false,
+    limits: {
+      fileSize: 10 * 1024 * 1024,
+    },
   });
 
   // Connect to MongoDB

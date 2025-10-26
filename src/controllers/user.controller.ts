@@ -39,9 +39,9 @@ export const registerUser = async (
       return reply.status(400).send({ message: 'Email already exists' });
     }
     const user = await userService.createUser({ name, email, password });
-    reply.send({ user });
+    reply.send({ status: 'success', user });
   } catch (err: any) {
-    reply.status(500).send({ message: err.message });
+    reply.status(500).send({ status: 'error', message: err.message });
   }
 };
 
@@ -53,20 +53,32 @@ export const loginUser = async (
     const { email, password } = req.body;
     const user = await userService.getUserByEmail(email);
     if (!user)
-      return reply.status(400).send({ message: 'Invalid credentials' });
+      return reply
+        .status(400)
+        .send({ status: 'error', message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
-      return reply.status(400).send({ message: 'Invalid credentials' });
+      return reply
+        .status(400)
+        .send({ status: 'error', message: 'Invalid credentials' });
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
-    reply.send({ user, token });
+    reply
+      .setCookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60,
+      })
+      .send({ status: 'success', user });
   } catch (err: any) {
-    reply.status(500).send({ message: err.message });
+    reply.status(500).send({ status: 'error', message: err.message });
   }
 };
 
@@ -102,4 +114,8 @@ export const deleteUserById = async (
   } catch (err: any) {
     reply.status(500).send({ message: err.message });
   }
+};
+
+export const logoutUser = async (req: FastifyRequest, reply: FastifyReply) => {
+  reply.send({ status: 'success', message: 'User logged out' });
 };
