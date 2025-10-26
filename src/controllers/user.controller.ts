@@ -68,11 +68,12 @@ export const loginUser = async (
       process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
+    const isHttps = req.headers['x-forwarded-proto'] === 'https';
     reply
       .setCookie('token', token, {
         httpOnly: true,
-        secure: process.env.COOKIE_SECURE === 'true',
-        sameSite: 'lax',
+        secure: isHttps,
+        sameSite: isHttps ? 'none' : 'lax',
         path: '/',
         maxAge: 7 * 24 * 60 * 60,
       })
