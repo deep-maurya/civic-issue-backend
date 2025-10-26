@@ -40,7 +40,7 @@ export const createIssueController = async (
     } else {
       formData = req.body;
     }
-    const { title, description, location } = formData;
+    const { title, description, location, latitude, longitude } = formData;
 
     if (!title || !description || !location) {
       return reply.code(400).send({
@@ -62,6 +62,8 @@ export const createIssueController = async (
       location: location.trim(),
       reportedBy: user.id,
       images: imageUrls,
+      lat: latitude ? parseFloat(formData.latitude) : undefined,
+      lng: longitude ? parseFloat(formData.longitude) : undefined,
     };
 
     const result = await createIssue(issueData);
@@ -104,11 +106,7 @@ export const addOpinionController = async (
 ) => {
   try {
     const user = (req as any).user;
-    const result = await addOpinion(
-      req.params.id,
-      user.id,
-      req.body.comment
-    );
+    const result = await addOpinion(req.params.id, user.id, req.body.comment);
     reply.send(result);
   } catch (err: any) {
     reply.code(400).send({ status: 'error', message: err.message });

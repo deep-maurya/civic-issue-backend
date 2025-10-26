@@ -13,6 +13,8 @@ export const createIssue = async (data: {
   location: string;
   images?: string[];
   reportedBy: string;
+  lat?: Number;
+  lng?: Number;
 }) => {
   try {
     const issue = await Issue.create({

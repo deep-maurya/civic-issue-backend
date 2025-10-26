@@ -5,6 +5,7 @@ import {
   listUsers,
   updateUserById,
   deleteUserById,
+  logoutUser,
 } from '../controllers/user.controller';
 
 export default async function userRoutes(fastify: FastifyInstance) {
@@ -13,4 +14,5 @@ export default async function userRoutes(fastify: FastifyInstance) {
   fastify.get('/', listUsers);
   fastify.put('/:id', updateUserById);
   fastify.delete('/:id', deleteUserById);
+  fastify.post('/logout', logoutUser);
 }
